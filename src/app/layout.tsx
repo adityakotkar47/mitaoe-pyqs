@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import { PaperProvider } from "@/contexts/PaperContext"
 import LoadingDataChecker from "@/components/middleware/LoadingDataChecker"
 import ClientProvider from "@/components/ClientProvider"
+import ServerDownBanner from "@/components/ServerDownBanner"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -106,6 +107,7 @@ export default function RootLayout({
                 />
             </head>
             <body className={inter.className} suppressHydrationWarning={true}>
+                <ServerDownBanner />
                 <PaperProvider>
                     <Suspense fallback={<div>Loading...</div>}>
                         <LoadingDataChecker>

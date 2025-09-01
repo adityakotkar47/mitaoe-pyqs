@@ -45,18 +45,12 @@ function formatZipFilename(papers: Paper[], filters: Record<string, string[]>): 
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Parse the request body to get the array of papers to download
-    const body = await request.json();
-    const papers: Paper[] = body.papers;
-    const filters: Record<string, string[]> = body.filters || {};
-
-    if (!papers || !Array.isArray(papers) || papers.length === 0) {
-      return NextResponse.json(
-        { error: 'Invalid or empty papers array provided' },
-        { status: 400 }
-      );
-    }
+  // Server down - batch downloads disabled
+  return NextResponse.json(
+    { error: 'Downloads temporarily unavailable - College servers are down' }, 
+    { status: 503 }
+  );
+}
 
     // Limit the number of papers that can be downloaded at once
     if (papers.length > 50) {

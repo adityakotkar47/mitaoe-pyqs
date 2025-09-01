@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import mime from 'mime-types';
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const url = searchParams.get('url');
-
-  if (!url) {
-    return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
-  }
+  // Server down - downloads disabled
+  return NextResponse.json(
+    { error: 'Downloads temporarily unavailable - College servers are down' }, 
+    { status: 503 }
+  );
+}
 
   try {
     // Fetch the file from the original URL

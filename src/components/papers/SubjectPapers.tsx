@@ -265,15 +265,8 @@ const SubjectPapersView = () => {
     }
 
     const handleDownload = async (paper: Paper) => {
-        if (downloadingFile) return
-        setDownloadingFile(paper.fileName)
-        try {
-            await downloadFile(paper.url, paper.fileName)
-        } catch (error) {
-            console.error("Download failed:", error)
-        } finally {
-            setDownloadingFile(null)
-        }
+        // Server down - downloads disabled
+        return
     }
 
     const toggleFilterItem = (key: "years" | "examTypes", value: string) => {
@@ -399,23 +392,15 @@ const SubjectPapersView = () => {
                                     e.stopPropagation()
                                     handleDownload(paper)
                                 }}
-                                disabled={downloadingFile === paper.fileName}
-                                className="mt-auto w-full flex items-center justify-center gap-2 bg-brand text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand/50 disabled:opacity-50"
+                                disabled={true}
+                                className="mt-auto w-full flex items-center justify-center gap-2 bg-gray-500 text-white rounded-lg px-3 py-2 text-sm font-medium opacity-50 cursor-not-allowed"
+                                title="Downloads temporarily unavailable - College servers are down"
                             >
                                 <Download
                                     size={16}
                                     weight="duotone"
-                                    className={
-                                        downloadingFile === paper.fileName
-                                            ? "animate-spin"
-                                            : ""
-                                    }
                                 />
-                                <span>
-                                    {downloadingFile === paper.fileName
-                                        ? "Downloading..."
-                                        : "Download"}
-                                </span>
+                                <span>Server Down</span>
                             </button>
                         ) : null}
                     </div>
@@ -493,23 +478,15 @@ const SubjectPapersView = () => {
                                     e.stopPropagation()
                                     handleDownload(paper)
                                 }}
-                                disabled={downloadingFile === paper.fileName}
-                                className="flex items-center gap-2 bg-brand text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand/50 disabled:opacity-50 flex-shrink-0"
+                                disabled={true}
+                                className="flex items-center gap-2 bg-gray-500 text-white rounded-lg px-3 py-2 text-sm font-medium opacity-50 cursor-not-allowed flex-shrink-0"
+                                title="Downloads temporarily unavailable - College servers are down"
                             >
                                 <Download
                                     size={16}
                                     weight="duotone"
-                                    className={
-                                        downloadingFile === paper.fileName
-                                            ? "animate-spin"
-                                            : ""
-                                    }
                                 />
-                                <span className="hidden sm:inline">
-                                    {downloadingFile === paper.fileName
-                                        ? "Downloading..."
-                                        : "Download"}
-                                </span>
+                                <span className="hidden sm:inline">Server Down</span>
                             </button>
                         ) : null}
                     </div>
@@ -898,62 +875,9 @@ const SubjectPapersView = () => {
     }
 
     const handleBatchDownload = async () => {
-        if (selectedPapersArray.length === 0) {
-            toast.error("No papers selected for download")
-            return
-        }
-
-        // For a single paper, download directly instead of batching
-        if (selectedPapersArray.length === 1) {
-            const paper = selectedPapersArray[0]
-            try {
-                const toastId = toast.loading(
-                    `Downloading ${paper.fileName}...`
-                )
-
-                const success = await downloadFile(paper.url, paper.fileName)
-
-                // Dismiss the loading toast
-                toast.dismiss(toastId)
-
-                if (success) {
-                    setIsSelectMode(false)
-                    setSelectedPapers({})
-                }
-            } catch (error) {
-                console.error("Download failed:", error)
-                toast.error("Failed to download paper. Please try again.")
-            }
-            return
-        }
-
-        // Reset any previous progress for batch downloads
-        setBatchDownloadProgress({
-            totalPapers: selectedPapersArray.length,
-            completed: 0,
-            status: "preparing",
-            percentage: 0,
-        })
-
-        // Attempt the batch download with filter information
-        await batchDownloadPapers(selectedPapersArray, filters, (progress) => {
-            setBatchDownloadProgress(progress)
-
-            // If complete or error, clear progress after a delay
-            if (progress.status === "complete" || progress.status === "error") {
-                const timeoutDuration =
-                    progress.status === "error" ? 3000 : 1000
-                setTimeout(() => {
-                    setBatchDownloadProgress(null)
-
-                    // If download was successful, exit select mode
-                    if (progress.status === "complete") {
-                        setIsSelectMode(false)
-                        setSelectedPapers({})
-                    }
-                }, timeoutDuration)
-            }
-        })
+        // Server down - batch downloads disabled
+        toast.error("Downloads temporarily unavailable - College servers are down")
+        return
     }
 
     return (
@@ -1224,17 +1148,16 @@ const SubjectPapersView = () => {
                 <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
                     <button
                         onClick={handleBatchDownload}
-                        className="bg-brand text-white px-4 py-3 sm:px-6 sm:py-3.5 rounded-xl shadow-xl backdrop-blur-sm transition-colors duration-200 hover:bg-brand/90 focus:outline-none focus:ring-2 focus:ring-brand/50 flex items-center gap-2 border border-brand/30"
+                        disabled={true}
+                        className="bg-gray-500 text-white px-4 py-3 sm:px-6 sm:py-3.5 rounded-xl shadow-xl backdrop-blur-sm opacity-50 cursor-not-allowed flex items-center gap-2 border border-gray-500/30"
+                        title="Downloads temporarily unavailable - College servers are down"
                     >
                         {selectedPapersCount === 1 ? (
                             <Download size={20} weight="duotone" />
                         ) : (
                             <FileZip size={20} weight="duotone" />
                         )}
-                        <span>
-                            Download {selectedPapersCount}{" "}
-                            {selectedPapersCount === 1 ? "Paper" : "Papers"}
-                        </span>
+                        <span>Server Down</span>
                     </button>
                 </div>
             )}
