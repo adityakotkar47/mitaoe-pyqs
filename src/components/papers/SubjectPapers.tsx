@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState, useMemo, useEffect, useRef } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { usePapers } from "@/contexts/PaperContext"
-import Image from "next/image"
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { usePapers } from "@/contexts/PaperContext";
+import Image from "next/image";
 import {
     GridFour,
     List,
@@ -15,90 +15,86 @@ import {
     X,
     Funnel,
     FileZip,
-} from "@phosphor-icons/react"
-import {
-    downloadFile,
-    batchDownloadPapers,
-    BatchDownloadProgress,
-} from "@/utils/download"
-import { Paper } from "@/types/paper"
-import FadeIn from "@/components/animations/FadeIn"
-import { toast } from "sonner"
+} from "@phosphor-icons/react";
+import { BatchDownloadProgress } from "@/utils/download";
+// import { Paper } from "@/types/paper"
+import FadeIn from "@/components/animations/FadeIn";
+import { toast } from "sonner";
 
 const SubjectPapersView = () => {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const { papers, dataReady, meta } = usePapers()
-    const [selectedSubject, setSelectedSubject] = useState<string | null>(null)
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const [downloadingFile, setDownloadingFile] = useState<string | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const { papers, dataReady, meta } = usePapers();
+    const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    // const [downloadingFile, setDownloadingFile] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedPapers, setSelectedPapers] = useState<
         Record<string, boolean>
-    >({})
-    const [isSelectMode, setIsSelectMode] = useState(false)
-    const [showFilters, setShowFilters] = useState(false)
+    >({});
+    const [isSelectMode, setIsSelectMode] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState({
         years: [] as string[],
         examTypes: [] as string[],
-    })
+    });
     const [batchDownloadProgress, setBatchDownloadProgress] =
-        useState<BatchDownloadProgress | null>(null)
-    const [showSelectTuto, setShowSelectTuto] = useState(false)
-    const previousSubjectRef = useRef<string | null>(null)
+        useState<BatchDownloadProgress | null>(null);
+    const [showSelectTuto, setShowSelectTuto] = useState(false);
+    const previousSubjectRef = useRef<string | null>(null);
 
     useEffect(() => {
         try {
             const hasSeenTuto = localStorage.getItem(
                 "papers_select_tutorial_seen"
-            )
+            );
             if (!hasSeenTuto) {
                 const timer = setTimeout(() => {
-                    setShowSelectTuto(true)
-                }, 1500) // Show after 1.5 seconds
-                return () => clearTimeout(timer)
+                    setShowSelectTuto(true);
+                }, 1500); // Show after 1.5 seconds
+                return () => clearTimeout(timer);
             }
         } catch (error) {
-            console.warn("Failed to read from localStorage:", error)
+            console.warn("Failed to read from localStorage:", error);
             // Fallback: show tutorial if localStorage fails
             const timer = setTimeout(() => {
-                setShowSelectTuto(true)
-            }, 1500)
-            return () => clearTimeout(timer)
+                setShowSelectTuto(true);
+            }, 1500);
+            return () => clearTimeout(timer);
         }
-    }, [])
+    }, []);
 
     const handleDismissTuto = () => {
-        setShowSelectTuto(false)
+        setShowSelectTuto(false);
         try {
-            localStorage.setItem("papers_select_tutorial_seen", "true")
+            localStorage.setItem("papers_select_tutorial_seen", "true");
         } catch (error) {
-            console.warn("Failed to save to localStorage:", error)
+            console.warn("Failed to save to localStorage:", error);
             // Continue without saving - tutorial will show again next time
         }
-    }
+    };
 
     const scrollToTop = () => {
-        window.scrollTo(0, 0)
+        window.scrollTo(0, 0);
 
-        const scrollContainer = document.getElementById("scrollable-content")
+        const scrollContainer = document.getElementById("scrollable-content");
         if (scrollContainer) {
-            scrollContainer.scrollTop = 0
+            scrollContainer.scrollTop = 0;
         }
-    }
+    };
 
     useEffect(() => {
         if (dataReady && meta?.standardSubjects) {
-            const subjectParam = searchParams.get("subject")
+            const subjectParam = searchParams.get("subject");
 
             if (subjectParam) {
                 if (
                     previousSubjectRef.current !== null &&
                     previousSubjectRef.current !== subjectParam
                 ) {
-                    scrollToTop()
+                    scrollToTop();
                 }
-                previousSubjectRef.current = subjectParam
+                previousSubjectRef.current = subjectParam;
             }
 
             if (
@@ -111,222 +107,222 @@ const SubjectPapersView = () => {
                 toast.error(`Subject "${subjectParam}" not found`, {
                     description: "Redirecting to the subject list",
                     duration: 4000,
-                })
+                });
 
                 setTimeout(() => {
-                    router.push("/papers")
-                }, 1500)
+                    router.push("/papers");
+                }, 1500);
             }
         }
-    }, [searchParams, dataReady, meta, router])
+    }, [searchParams, dataReady, meta, router]);
 
     // When component mounts, ensure we're at the top of the page
     useEffect(() => {
-        scrollToTop()
-    }, [])
+        scrollToTop();
+    }, []);
 
     useEffect(() => {
         const checkScreenSize = () => {
             if (typeof window !== "undefined") {
-                setViewMode(window.innerWidth < 640 ? "list" : "grid")
+                setViewMode(window.innerWidth < 640 ? "list" : "grid");
             }
-        }
+        };
 
-        checkScreenSize()
-        window.addEventListener("resize", checkScreenSize)
+        checkScreenSize();
+        window.addEventListener("resize", checkScreenSize);
 
         return () => {
-            window.removeEventListener("resize", checkScreenSize)
-        }
-    }, [])
+            window.removeEventListener("resize", checkScreenSize);
+        };
+    }, []);
 
     useEffect(() => {
         // Simulate loading state for smooth transition
         const timer = setTimeout(() => {
-            setIsLoading(false)
-        }, 300)
+            setIsLoading(false);
+        }, 300);
 
-        return () => clearTimeout(timer)
-    }, [])
+        return () => clearTimeout(timer);
+    }, []);
 
     // Get the subject parameter from URL and filter papers
     const filteredPapers = useMemo(() => {
-        const subjectParam = searchParams.get("subject")
+        const subjectParam = searchParams.get("subject");
         if (subjectParam) {
-            setSelectedSubject(subjectParam)
+            setSelectedSubject(subjectParam);
             // Filter papers by subject and remove duplicates based on fileName
             const papersBySubject = papers.filter(
                 (paper) =>
                     paper.standardSubject.toLowerCase() ===
                         subjectParam.toLowerCase() ||
                     paper.subject.toLowerCase() === subjectParam.toLowerCase()
-            )
+            );
 
             // Apply additional filters if any
-            let filtered = [...papersBySubject]
+            let filtered = [...papersBySubject];
 
             if (filters.years.length > 0) {
                 filtered = filtered.filter((paper) =>
                     filters.years.includes(paper.year)
-                )
+                );
             }
 
             if (filters.examTypes.length > 0) {
                 filtered = filtered.filter((paper) => {
                     // Map any exam type to ESE except MSE
                     const normalizedExamType =
-                        paper.examType.toLowerCase() === "mse" ? "MSE" : "ESE"
-                    return filters.examTypes.includes(normalizedExamType)
-                })
+                        paper.examType.toLowerCase() === "mse" ? "MSE" : "ESE";
+                    return filters.examTypes.includes(normalizedExamType);
+                });
             }
 
             // Sort papers by year (newest first)
             const sortedPapers = [...filtered].sort((a, b) => {
-                const yearA = parseInt(a.year) || 0
-                const yearB = parseInt(b.year) || 0
-                return yearB - yearA
-            })
+                const yearA = parseInt(a.year) || 0;
+                const yearB = parseInt(b.year) || 0;
+                return yearB - yearA;
+            });
 
             const uniquePapers = Array.from(
                 new Map(
                     sortedPapers.map((paper) => [paper.fileName, paper])
                 ).values()
-            )
+            );
 
-            return uniquePapers
+            return uniquePapers;
         }
-        return []
-    }, [searchParams, papers, filters])
+        return [];
+    }, [searchParams, papers, filters]);
 
     // Get unique years and exam types for filters
     const filterOptions = useMemo(() => {
-        const years = new Set<string>()
-        const examTypes = new Set<string>(["ESE", "MSE"])
+        const years = new Set<string>();
+        const examTypes = new Set<string>(["ESE", "MSE"]);
 
         // Only collect unique values from papers matching the current subject
-        const subjectParam = searchParams.get("subject")
+        const subjectParam = searchParams.get("subject");
         if (subjectParam) {
             const subjectPapers = papers.filter(
                 (paper) =>
                     paper.standardSubject.toLowerCase() ===
                         subjectParam.toLowerCase() ||
                     paper.subject.toLowerCase() === subjectParam.toLowerCase()
-            )
+            );
 
             subjectPapers.forEach((paper) => {
-                years.add(paper.year)
-            })
+                years.add(paper.year);
+            });
         }
 
         return {
             years: Array.from(years).sort((a, b) => parseInt(b) - parseInt(a)),
             examTypes: Array.from(examTypes),
-        }
-    }, [searchParams, papers])
+        };
+    }, [searchParams, papers]);
 
     const selectedPapersCount = useMemo(() => {
-        return Object.values(selectedPapers).filter(Boolean).length
-    }, [selectedPapers])
+        return Object.values(selectedPapers).filter(Boolean).length;
+    }, [selectedPapers]);
 
     const selectedPapersArray = useMemo(() => {
-        return filteredPapers.filter((paper) => selectedPapers[paper.fileName])
-    }, [filteredPapers, selectedPapers])
+        return filteredPapers.filter((paper) => selectedPapers[paper.fileName]);
+    }, [filteredPapers, selectedPapers]);
 
     const toggleViewMode = () => {
-        setViewMode((prev) => (prev === "grid" ? "list" : "grid"))
-    }
+        setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
+    };
 
     const toggleSelectMode = () => {
-        setIsSelectMode((prev) => !prev)
+        setIsSelectMode((prev) => !prev);
         if (isSelectMode) {
-            setSelectedPapers({})
+            setSelectedPapers({});
         }
-    }
+    };
 
     const togglePaperSelection = (fileName: string) => {
         setSelectedPapers((prev) => ({
             ...prev,
             [fileName]: !prev[fileName],
-        }))
-    }
+        }));
+    };
 
     const toggleAllPapers = () => {
         if (selectedPapersCount === filteredPapers.length) {
             // Deselect all
-            setSelectedPapers({})
+            setSelectedPapers({});
         } else {
             // Select all
-            const newSelection: Record<string, boolean> = {}
+            const newSelection: Record<string, boolean> = {};
             filteredPapers.forEach((paper) => {
-                newSelection[paper.fileName] = true
-            })
-            setSelectedPapers(newSelection)
+                newSelection[paper.fileName] = true;
+            });
+            setSelectedPapers(newSelection);
         }
-    }
+    };
 
-    const handleDownload = async (paper: Paper) => {
-        // Server down - downloads disabled
-        return
-    }
+    const handleDownload = async () => {
+        // Downloads disabled - college servers under maintenance
+        return;
+    };
 
     const toggleFilterItem = (key: "years" | "examTypes", value: string) => {
         setFilters((prev) => {
-            const currentValues = [...prev[key]]
-            const valueIndex = currentValues.indexOf(value)
+            const currentValues = [...prev[key]];
+            const valueIndex = currentValues.indexOf(value);
 
             if (valueIndex === -1) {
                 // Add the value if it doesn't exist
                 return {
                     ...prev,
                     [key]: [...currentValues, value],
-                }
+                };
             } else {
                 // Remove the value if it exists
-                currentValues.splice(valueIndex, 1)
+                currentValues.splice(valueIndex, 1);
                 return {
                     ...prev,
                     [key]: currentValues,
-                }
+                };
             }
-        })
-    }
+        });
+    };
 
     const clearFilters = () => {
         setFilters({
             years: [],
             examTypes: [],
-        })
-    }
+        });
+    };
 
     const isAnyFilterActive =
-        filters.years.length > 0 || filters.examTypes.length > 0
+        filters.years.length > 0 || filters.examTypes.length > 0;
 
     // Add new useEffect to update selected papers when filters change
     useEffect(() => {
         if (isSelectMode) {
-            const newSelection: Record<string, boolean> = {}
+            const newSelection: Record<string, boolean> = {};
 
             filteredPapers.forEach((paper) => {
                 if (selectedPapers[paper.fileName]) {
-                    newSelection[paper.fileName] = true
+                    newSelection[paper.fileName] = true;
                 }
-            })
+            });
 
-            const currentSelectedCount = Object.keys(selectedPapers).length
-            const newSelectedCount = Object.keys(newSelection).length
+            const currentSelectedCount = Object.keys(selectedPapers).length;
+            const newSelectedCount = Object.keys(newSelection).length;
 
             if (currentSelectedCount !== newSelectedCount) {
-                setSelectedPapers(newSelection)
+                setSelectedPapers(newSelection);
             } else if (currentSelectedCount > 0) {
                 const hasChanges = Object.keys(newSelection).some(
                     (key) => !selectedPapers[key]
-                )
+                );
                 if (hasChanges) {
-                    setSelectedPapers(newSelection)
+                    setSelectedPapers(newSelection);
                 }
             }
         }
-    }, [filters, isSelectMode, filteredPapers, selectedPapers])
+    }, [filters, isSelectMode, filteredPapers, selectedPapers]);
 
     // Grid view
     const renderGridView = () => (
@@ -389,25 +385,22 @@ const SubjectPapersView = () => {
                         {!isSelectMode ? (
                             <button
                                 onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDownload(paper)
+                                    e.stopPropagation();
+                                    handleDownload();
                                 }}
                                 disabled={true}
                                 className="mt-auto w-full flex items-center justify-center gap-2 bg-gray-500 text-white rounded-lg px-3 py-2 text-sm font-medium opacity-50 cursor-not-allowed"
                                 title="Downloads temporarily unavailable - College servers are down"
                             >
-                                <Download
-                                    size={16}
-                                    weight="duotone"
-                                />
-                                <span>Server Down</span>
+                                <Download size={16} weight="duotone" />
+                                <span>Unavailable</span>
                             </button>
                         ) : null}
                     </div>
                 </FadeIn>
             ))}
         </div>
-    )
+    );
 
     const renderListView = () => (
         <div className="space-y-3 sm:space-y-4">
@@ -439,8 +432,8 @@ const SubjectPapersView = () => {
                                             : "bg-primary/40 text-content/80"
                                     }`}
                                     onClick={(e) => {
-                                        e.stopPropagation()
-                                        togglePaperSelection(paper.fileName)
+                                        e.stopPropagation();
+                                        togglePaperSelection(paper.fileName);
                                     }}
                                 >
                                     {selectedPapers[paper.fileName] ? (
@@ -475,25 +468,24 @@ const SubjectPapersView = () => {
                         {!isSelectMode ? (
                             <button
                                 onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDownload(paper)
+                                    e.stopPropagation();
+                                    handleDownload();
                                 }}
                                 disabled={true}
                                 className="flex items-center gap-2 bg-gray-500 text-white rounded-lg px-3 py-2 text-sm font-medium opacity-50 cursor-not-allowed flex-shrink-0"
                                 title="Downloads temporarily unavailable - College servers are down"
                             >
-                                <Download
-                                    size={16}
-                                    weight="duotone"
-                                />
-                                <span className="hidden sm:inline">Server Down</span>
+                                <Download size={16} weight="duotone" />
+                                <span className="hidden sm:inline">
+                                    Unavailable
+                                </span>
                             </button>
                         ) : null}
                     </div>
                 </FadeIn>
             ))}
         </div>
-    )
+    );
 
     // Loading state
     if (isLoading || !dataReady) {
@@ -512,12 +504,12 @@ const SubjectPapersView = () => {
                     </p>
                 </div>
             </div>
-        )
+        );
     }
 
     // Render filter dropdown
     const renderFilterDropdown = () => {
-        if (!showFilters) return null
+        if (!showFilters) return null;
 
         return (
             <div className="absolute right-0 top-full mt-2 bg-secondary border border-accent/50 rounded-xl shadow-lg p-4 z-30 w-64">
@@ -589,8 +581,8 @@ const SubjectPapersView = () => {
                     </button>
                 )}
             </div>
-        )
-    }
+        );
+    };
 
     // Fallback if no papers match the subject
     if (!filteredPapers.length) {
@@ -693,80 +685,80 @@ const SubjectPapersView = () => {
                     </p>
                 </div>
             </div>
-        )
+        );
     }
 
     // Render batch download progress overlay
     const renderBatchDownloadProgress = () => {
-        if (!batchDownloadProgress) return null
+        if (!batchDownloadProgress) return null;
 
         const getStatusText = () => {
             switch (batchDownloadProgress.status) {
                 case "preparing":
-                    return "Preparing download..."
+                    return "Preparing download...";
                 case "downloading":
                     return `Downloading ${
                         batchDownloadProgress.completed || 0
-                    } of ${batchDownloadProgress.totalPapers} papers...`
+                    } of ${batchDownloadProgress.totalPapers} papers...`;
                 case "processing":
-                    return "Creating ZIP file..."
+                    return "Creating ZIP file...";
                 case "sending":
-                    return "Sending to your browser..."
+                    return "Sending to your browser...";
                 case "complete":
-                    return "Download complete!"
+                    return "Download complete!";
                 case "error":
-                    return batchDownloadProgress.error || "Download failed"
+                    return batchDownloadProgress.error || "Download failed";
                 default:
-                    return "Processing..."
+                    return "Processing...";
             }
-        }
+        };
 
         const getProgressPercentage = () => {
             if (batchDownloadProgress.percentage !== undefined) {
-                return batchDownloadProgress.percentage
+                return batchDownloadProgress.percentage;
             }
 
             // Fallback percentages
-            if (batchDownloadProgress.status === "complete") return 100
-            if (batchDownloadProgress.status === "error") return 0
-            if (batchDownloadProgress.status === "preparing") return 5
-            if (batchDownloadProgress.status === "downloading") return 30
-            if (batchDownloadProgress.status === "processing") return 70
-            if (batchDownloadProgress.status === "sending") return 90
-            return 0
-        }
+            if (batchDownloadProgress.status === "complete") return 100;
+            if (batchDownloadProgress.status === "error") return 0;
+            if (batchDownloadProgress.status === "preparing") return 5;
+            if (batchDownloadProgress.status === "downloading") return 30;
+            if (batchDownloadProgress.status === "processing") return 70;
+            if (batchDownloadProgress.status === "sending") return 90;
+            return 0;
+        };
 
         const getDetailText = () => {
             if (batchDownloadProgress.currentPaper) {
-                return batchDownloadProgress.currentPaper
+                return batchDownloadProgress.currentPaper;
             }
 
             if (batchDownloadProgress.status === "complete") {
-                return `Successfully downloaded ${batchDownloadProgress.totalPapers} papers`
+                return `Successfully downloaded ${batchDownloadProgress.totalPapers} papers`;
             }
             if (batchDownloadProgress.status === "error") {
                 return batchDownloadProgress.error &&
                     batchDownloadProgress.error.includes("Failed to connect")
                     ? "Check your network connection and try again"
-                    : ""
+                    : "";
             }
 
             if (batchDownloadProgress.status === "downloading") {
-                const percent = getProgressPercentage()
-                return `${percent.toFixed(0)}%`
+                const percent = getProgressPercentage();
+                return `${percent.toFixed(0)}%`;
             }
 
             if (batchDownloadProgress.status === "processing") {
-                return "Compressing files into ZIP archive"
+                return "Compressing files into ZIP archive";
             }
 
             if (batchDownloadProgress.status === "sending") {
-                return "Starting browser download"
+                return "Starting browser download";
             }
 
-            const percentage = getProgressPercentage()
-            return `${percentage.toFixed(0)}% complete`
-        }
+            const percentage = getProgressPercentage();
+            return `${percentage.toFixed(0)}% complete`;
+        };
 
         return (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -819,49 +811,7 @@ const SubjectPapersView = () => {
                                         completed: 0,
                                         status: "preparing",
                                         percentage: 0,
-                                    })
-
-                                    // Small delay to show the preparing state before starting
-                                    setTimeout(() => {
-                                        batchDownloadPapers(
-                                            selectedPapersArray,
-                                            filters,
-                                            (progress) => {
-                                                setBatchDownloadProgress(
-                                                    progress
-                                                )
-
-                                                if (
-                                                    progress.status ===
-                                                        "complete" ||
-                                                    progress.status === "error"
-                                                ) {
-                                                    const timeoutDuration =
-                                                        progress.status ===
-                                                        "error"
-                                                            ? 3000
-                                                            : 1000
-                                                    setTimeout(() => {
-                                                        setBatchDownloadProgress(
-                                                            null
-                                                        )
-
-                                                        if (
-                                                            progress.status ===
-                                                            "complete"
-                                                        ) {
-                                                            setIsSelectMode(
-                                                                false
-                                                            )
-                                                            setSelectedPapers(
-                                                                {}
-                                                            )
-                                                        }
-                                                    }, timeoutDuration)
-                                                }
-                                            }
-                                        )
-                                    }, 300)
+                                    });
                                 }}
                                 className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 hover:bg-brand/90 focus:outline-none"
                             >
@@ -871,14 +821,14 @@ const SubjectPapersView = () => {
                     )}
                 </div>
             </div>
-        )
-    }
+        );
+    };
 
     const handleBatchDownload = async () => {
         // Server down - batch downloads disabled
-        toast.error("Downloads temporarily unavailable - College servers are down")
-        return
-    }
+        toast.error("Downloads temporarily unavailable");
+        return;
+    };
 
     return (
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative">
@@ -1157,7 +1107,7 @@ const SubjectPapersView = () => {
                         ) : (
                             <FileZip size={20} weight="duotone" />
                         )}
-                        <span>Server Down</span>
+                        <span>Unavailable</span>
                     </button>
                 </div>
             )}
@@ -1165,7 +1115,7 @@ const SubjectPapersView = () => {
             {/* Batch download progress overlay */}
             {batchDownloadProgress && renderBatchDownloadProgress()}
         </div>
-    )
-}
+    );
+};
 
-export default SubjectPapersView
+export default SubjectPapersView;
